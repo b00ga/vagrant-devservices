@@ -1,0 +1,44 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+  - name: OS & Distribution related info
+    debug:
+      var: '{{ item }}'
+    with_items:
+    - ansible_os_family
+    - ansible_distribution
+    - ansible_distribution_version
+    - ansible_distribution_major_version
+    - ansible_distribution_minor_version
+
+  - name: Install tools
+    package:
+      name: vim
+      state: present
+
+  - name: Install gitea
+    import_role:
+      name: do1jlr.gitea
+    vars:
+      gitea_http_listen: 0.0.0.0
+      gitea_disable_registration: true
+
+  - name: Check for gitea admin user
+    shell: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user list | grep ^1
+    register: giteaadmin
+    changed_when: false
+    failed_when: false
+
+  - name: Create admin user
+    command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user create --username gitadmin --password Admin123@ --admin --email root@localhost
+    when: giteaadmin.rc != 0
+
+  - name: Add gitea to firewall
+    firewalld:
+      port: 3000/tcp
+      permanent: yes
+      immediate: yes
+      state: enabled
+

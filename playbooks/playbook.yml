@@ -18,6 +18,11 @@
       name: vim
       state: present
 
+  - name: Install 389 Directory Server
+    import_role:
+      name: lvps.389ds_server
+    vars:
+      dirsrv_rootdn_password: '{{ admin_password }}'
   - name: Install gitea
     import_role:
       name: do1jlr.gitea

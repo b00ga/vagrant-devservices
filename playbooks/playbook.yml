@@ -32,7 +32,7 @@
     failed_when: false
 
   - name: Create admin user
-    command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user create --username gitadmin --password Admin123@ --admin --email root@localhost
+    command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user create --username gitadmin --password '{{ admin_password }}' --admin --email root@localhost
     when: giteaadmin.rc != 0
 
   - name: Add gitea to firewall

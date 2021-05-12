@@ -47,3 +47,22 @@
       immediate: yes
       state: enabled
 
+  - name: Install nodejs
+    import_role:
+      name: geerlingguy.nodejs
+
+  - name: Install wikijs
+    import_role:
+      name: supertarto.wikijs
+    vars:
+      wikijs_download_dest: /opt/wikijs
+      wikijs_config_port: 3002
+      wikijs_config_db_type: sqlite
+      wikijs_config_sqlite_storage: /opt/wikijs/wikidb.sqlite
+
+  - name: Add wikijs to firewall
+    firewalld:
+      port: 3002/tcp
+      permanent: yes
+      immediate: yes
+      state: enabled

@@ -23,6 +23,23 @@
       name: lvps.389ds_server
     vars:
       dirsrv_rootdn_password: '{{ admin_password }}'
+
+  - name: Install postgresql
+    import_role:
+      name: geerlingguy.postgresql
+
+  - name: Create gitea db user
+    become_user: postgres
+    postgresql_user:
+      name: gitea
+      password: '{{ db_password }}'
+
+  - name: Create gitea database
+    become_user: postgres
+    postgresql_db:
+      name: giteadb
+      owner: gitea
+
   - name: Install gitea
     import_role:
       name: do1jlr.gitea
@@ -30,6 +47,20 @@
       gitea_http_listen: 0.0.0.0
       gitea_http_port: 3001
       gitea_disable_registration: true
+      gitea_db_type: postgres
+      gitea_db_host: localhost:5432
+      gitea_db_name: giteadb
+      gitea_db_user: gitea
+      gitea_db_password: '{{ db_password }}'
+
+  - name: wait for gitea to come up
+    uri:
+      url: "http://127.0.0.1:3001"
+      status_code: 200
+    register: result
+    until: result.status == 200
+    retries: 60
+    delay: 1
 
   - name: Check for gitea admin user
     shell: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user list | grep ^1

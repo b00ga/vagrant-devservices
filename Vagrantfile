@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.network "forwarded_port", guest: 80, host: 9000, id: "http"
-  config.vm.network "forwarded_port", guest: 3000, host: 9001, id: "gitea"
+  config.vm.network "forwarded_port", guest: 3001, host: 9001, id: "gitea"
   config.vm.network "forwarded_port", guest: 3002, host: 9002, id: "wikijs"
 
   config.vm.provision "ansible_local" do |ansible|

@@ -83,14 +83,31 @@
     import_role:
       name: geerlingguy.nodejs
 
+  - name: Create wikijs db user
+    become_user: postgres
+    postgresql_user:
+      name: wikijs
+      password: '{{ db_password }}'
+
+  - name: Create wikijs database
+    become_user: postgres
+    postgresql_db:
+      name: wikijsdb
+      owner: gitea
+
   - name: Install wikijs
     import_role:
       name: supertarto.wikijs
     vars:
       wikijs_download_dest: /opt/wikijs
       wikijs_config_port: 3002
-      wikijs_config_db_type: sqlite
-      wikijs_config_sqlite_storage: /opt/wikijs/wikidb.sqlite
+      wikijs_config_db_type: postgres
+      wikijs_config_db_host: localhost
+      wikijs_config_db_port: 5432
+      wikijs_config_db_user: wikijs
+      wikijs_config_db_pass: '{{ db_password }}'
+      wikijs_config_db_db: wikijsdb
+      wikijs_config_db_ssl: false
 
   - name: Add wikijs to firewall
     firewalld:

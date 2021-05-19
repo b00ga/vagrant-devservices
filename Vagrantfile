@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.hostname = "allthethings"
+  config.vm.hostname = "allthethings.example.com"
 
   config.vm.box = "generic/centos8"
   config.vm.synced_folder "shared-folder", "/vagrant"

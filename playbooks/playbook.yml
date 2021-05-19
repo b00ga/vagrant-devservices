@@ -18,6 +18,30 @@
       name: vim
       state: present
 
+  - name: Deploy TLS Certificates
+    import_role:
+      name: andrewrothstein.pki
+    vars:
+      pki_self_sign: True
+      pki_dir: /root/pki
+      pki_names:
+        - C: US
+          L: Nashua
+          O: Example
+          OU: Demo
+          ST: 'New Hampshire'
+      pki_ca:
+        cname: 'Example Root Certificate Authority'
+        expiry: '87600h'
+        pathlen: 0
+      pki_servers:
+        - cname: allthethings.example.com
+          include_localhost: True
+          profile: server
+          sans:
+            - allthethings.example.com
+            - allthethings
+
   - name: Install 389 Directory Server
     import_role:
       name: lvps.389ds_server

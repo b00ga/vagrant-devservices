@@ -1,5 +1,6 @@
 ---
 roles:
+  - name: andrewrothstein.pki
   - name: lvps.389ds_server
   - name: geerlingguy.postgresql
   - name: do1jlr.gitea

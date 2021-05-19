@@ -18,6 +18,12 @@
       name: vim
       state: present
 
+  - name: Enable firewalld
+    service:
+      name: firewalld
+      state: started
+      enabled: yes
+
   - name: Deploy TLS Certificates
     import_role:
       name: andrewrothstein.pki

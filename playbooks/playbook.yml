@@ -42,11 +42,55 @@
             - allthethings.example.com
             - allthethings
 
+  - name: Install cert files to standard EL locations
+    copy:
+      src: '{{ item.source }}'
+      dest: '{{ item.destination }}'
+      owner: root
+      group: root
+      mode: '{{ item.perms }}'
+      remote_src: yes
+    with_items:
+      - source: '/root/pki/ca.pem'
+        destination: '/etc/pki/ca-trust/source/anchors/examplerca.pem'
+        perms: '0644'
+      - source: '/root/pki/{{ ansible_fqdn }}-key.pem'
+        destination: '/etc/pki/tls/private/{{ ansible_fqdn }}.key'
+        perms: '0440'
+      - source: '/root/pki/{{ ansible_fqdn }}.pem'
+        destination: '/etc/pki/tls/certs/{{ ansible_fqdn }}.pem'
+        perms: '0644'
+    register: cainstall
+
+  - name: Update root certificate store
+    command: /bin/update-ca-trust extract
+    when: cainstall.changed
+
   - name: Install 389 Directory Server
     import_role:
       name: lvps.389ds_server
     vars:
       dirsrv_rootdn_password: '{{ admin_password }}'
+      dirsrv_suffix: dc=example,dc=com
+      dirsrv_install_examples: true
+      dirsrv_tls_enabled: true
+      dirsrv_allow_anonymous_binds: rootdse
+      dirsrv_ldapi_enabled: true
+      dirsrv_selfsigned_cert: false
+      dirsrv_tls_cert_file: '/etc/pki/tls/certs/{{ ansible_fqdn }}.pem'
+      dirsrv_tls_key_file: '/etc/pki/tls/private/{{ ansible_fqdn }}.key'
+      dirsrv_tls_files_remote: true
+
+  - name: Install 389DS cockpit plugin
+    package:
+      name: cockpit-389-ds
+      state: latest
+
+  - name: Start/enable cockpit
+    service:
+      name: cockpit
+      state: started
+      enabled: yes
 
   - name: Install postgresql
     import_role:

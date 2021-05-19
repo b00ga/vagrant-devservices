@@ -1,7 +1,7 @@
 Vagrant.configure("2") do |config|
   config.vm.hostname = "allthethings.example.com"
 
-  config.vm.box = "generic/centos8"
+  config.vm.box = "bento/centos-8"
   config.vm.synced_folder "shared-folder", "/vagrant"
   config.vm.synced_folder "playbooks", "/ansible", :mount_options => ["ro"]
 

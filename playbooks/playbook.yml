@@ -32,21 +32,21 @@
       pki_dir: /root/pki
       pki_names:
         - C: US
-          L: Nashua
-          O: Example
-          OU: Demo
-          ST: 'New Hampshire'
+          L: Boulder Hill
+          O: M.A.S.K.
+          OU: HQ
+          ST: Nevada
       pki_ca:
-        cname: 'Example Root Certificate Authority'
+        cname: 'M.A.S.K. Root Certificate Authority'
         expiry: '87600h'
         pathlen: 0
       pki_servers:
-        - cname: allthethings.example.com
+        - cname: hq.boulderhill.net
           include_localhost: True
           profile: server
           sans:
-            - allthethings.example.com
-            - allthethings
+            - hq.boulderhill.net
+            - hq
 
   - name: Install cert files to standard EL locations
     copy:
@@ -58,7 +58,7 @@
       remote_src: yes
     with_items:
       - source: '/root/pki/ca.pem'
-        destination: '/etc/pki/ca-trust/source/anchors/examplerca.pem'
+        destination: '/etc/pki/ca-trust/source/anchors/maskrca.pem'
         perms: '0644'
       - source: '/root/pki/{{ ansible_fqdn }}-key.pem'
         destination: '/etc/pki/tls/private/{{ ansible_fqdn }}.key'
@@ -77,7 +77,7 @@
       name: lvps.389ds_server
     vars:
       dirsrv_rootdn_password: '{{ admin_password }}'
-      dirsrv_suffix: dc=example,dc=com
+      dirsrv_suffix: dc=boulderhill,dc=net
       dirsrv_install_examples: true
       dirsrv_tls_enabled: true
       dirsrv_allow_anonymous_binds: rootdse

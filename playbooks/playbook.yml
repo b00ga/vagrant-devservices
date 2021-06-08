@@ -188,3 +188,9 @@
   - name: Install nodejs
     import_role:
       name: geerlingguy.nodejs
+
+  - name: Install NGINX
+    include_role:
+      name: nginxinc.nginx_core.nginx
+    vars:
+      nginx_debug_output: true

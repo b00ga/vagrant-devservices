@@ -123,19 +123,19 @@
     import_role:
       name: geerlingguy.postgresql
 
-  - name: Create gitea db user
+  - name: gitea--> Create gitea db user
     become_user: postgres
     postgresql_user:
       name: gitea
       password: '{{ db_password }}'
 
-  - name: Create gitea database
+  - name: gitea--> Create gitea database
     become_user: postgres
     postgresql_db:
       name: giteadb
       owner: gitea
 
-  - name: Install gitea
+  - name: gitea--> Install gitea
     import_role:
       name: do1jlr.gitea
     vars:
@@ -149,7 +149,7 @@
       gitea_db_user: gitea
       gitea_db_password: '{{ db_password }}'
 
-  - name: wait for gitea to come up
+  - name: gitea--> wait for gitea to come up
     uri:
       url: "http://127.0.0.1:3001"
       status_code: 200
@@ -158,17 +158,27 @@
     retries: 60
     delay: 1
 
-  - name: Check for gitea admin user
+  - name: gitea--> Check for gitea admin user
     shell: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user list | grep ^1
     register: giteaadmin
     changed_when: false
     failed_when: false
 
-  - name: Create admin user
+  - name: gitea--> Create admin user
     command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user create --username gitadmin --password '{{ admin_password }}' --admin --email root@localhost
     when: giteaadmin.rc != 0
 
-  - name: Add gitea to firewall
+  - name: gitea--> Check for LDAP authentication source
+    command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin auth list |grep 389ds
+    register: gitealdapauth
+    changed_when: false
+    failed_when: false
+
+  - name: gitea--> Create LDAP authentication source
+    command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin auth add-ldap-simple --name 389ds --host localhost --port 389 --security-protocol=starttls --user-search-base ou=people,dc=boulderhill,dc=net --user-filter="(&(objectClass=posixAccount)(uid=%s))" --username-attribute=uid --email-attribute=mail --user-dn="uid=%s,ou=people,dc=boulderhill,dc=net"
+    when: gitealdapauth.rc != 0
+
+  - name: gitea--> Add gitea to firewall
     firewalld:
       port: 3001/tcp
       permanent: yes

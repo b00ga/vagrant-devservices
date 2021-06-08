@@ -6,4 +6,3 @@ roles:
   - name: geerlingguy.postgresql
   - name: do1jlr.gitea
   - name: geerlingguy.nodejs
-  - name: supertarto.wikijs

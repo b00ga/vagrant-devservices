@@ -142,6 +142,7 @@
       gitea_http_listen: 0.0.0.0
       gitea_http_port: 3001
       gitea_disable_registration: true
+      gitea_show_registration_button: false
       gitea_db_type: postgres
       gitea_db_host: localhost:5432
       gitea_db_name: giteadb

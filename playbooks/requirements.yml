@@ -2,6 +2,7 @@
 roles:
   - name: andrewrothstein.pki
   - name: lvps.389ds_server
+    version: master
   - name: geerlingguy.postgresql
   - name: do1jlr.gitea
   - name: geerlingguy.nodejs

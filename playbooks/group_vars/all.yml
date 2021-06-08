@@ -1,3 +1,16 @@
 ---
 admin_password: Admin123@
 db_password: Allthed@T@
+ldap_users:
+  - fullName: Matt Trakker
+    userName: trakker
+    password: spectrum
+    uid: 5001
+  - fullName: Bruce Sato
+    userName: sato
+    password: lifter
+    uid: 5002
+  - fullName: Alex Sector
+    userName: sector
+    password: jackrabbit
+    uid: 5003

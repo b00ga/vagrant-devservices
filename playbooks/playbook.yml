@@ -87,6 +87,27 @@
       dirsrv_tls_key_file: '/etc/pki/tls/private/{{ ansible_fqdn }}.key'
       dirsrv_tls_files_remote: true
 
+  - name: Add demo users
+    ldap_entry:
+      server_uri: ldap://localhost
+      bind_dn: cn=Directory Manager
+      bind_pw: '{{ admin_password }}'
+      dn: 'uid={{ item.userName }},ou=people,dc=boulderhill,dc=net'
+      objectClass:
+        - nsPerson
+        - nsAccount
+        - nsOrgPerson
+        - posixAccount
+      attributes:
+        uid: '{{ item.userName }}'
+        cn: '{{ item.userName }}'
+        displayName: '{{ item.fullName }}'
+        uidNumber: '{{ item.uid }}'
+        gidNumber: '{{ item.uid }}'
+        homeDirectory: '/home/{{ item.userName }}'
+        userPassword: '{{ item.password }}'
+    with_items: '{{ ldap_users }}'
+
   - name: Install 389DS cockpit plugin
     package:
       name: cockpit-389-ds

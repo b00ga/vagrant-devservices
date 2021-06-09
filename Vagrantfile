@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
     v.cpus = 4
   end
 
-  config.vm.network "forwarded_port", guest: 80, host: 9000, id: "http"
+  config.vm.network "forwarded_port", guest: 9443, host: 9443, id: "althttps"
   config.vm.network "forwarded_port", guest: 3001, host: 9001, id: "gitea"
   config.vm.network "forwarded_port", guest: 9090, host: 9003, id: "cockpit"
 
@@ -21,6 +21,7 @@ Vagrant.configure("2") do |config|
     ansible.galaxy_command = "sudo ansible-galaxy collection install -r %{role_file} -p /usr/share/ansible/collections --force && sudo ansible-galaxy role install -r %{role_file} --roles-path=%{roles_path} --force"
     ansible.provisioning_path = "/ansible"
     ansible.compatibility_mode = "2.0"
-    #ansible.verbose = '-vvvv'
+    ##ansible.verbose = '-vvv'
+    ##ansible.skip_tags = "389ds,cockpit,firewalld,gitea,nodejs,pki,postgres"
   end
 end

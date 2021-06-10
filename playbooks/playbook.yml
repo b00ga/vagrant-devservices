@@ -163,10 +163,11 @@
     import_role:
       name: do1jlr.gitea
     vars:
-      gitea_http_listen: 0.0.0.0
+      gitea_http_listen: 127.0.0.1
       gitea_http_port: 3001
       gitea_disable_registration: true
       gitea_show_registration_button: false
+      gitea_root_url: https://hq.boulderhill.net:9443/git/
       gitea_db_type: postgres
       gitea_db_host: localhost:5432
       gitea_db_name: giteadb
@@ -201,7 +202,7 @@
       - gitea
 
   - name: gitea--> Check for LDAP authentication source
-    command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin auth list |grep 389ds
+    shell: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin auth list | grep 389ds
     register: gitealdapauth
     changed_when: false
     failed_when: false
@@ -258,6 +259,11 @@
               ssl:
                 cert: '/etc/pki/tls/certs/{{ ansible_fqdn }}.pem'
                 key: '/etc/pki/tls/private/{{ ansible_fqdn }}.key'
+              reverse_proxy:
+                locations:
+                  gitea:
+                    location: /git/
+                    proxy_pass: http://localhost:3001/
     tags:
       - nginx
 

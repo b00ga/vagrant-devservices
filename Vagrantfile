@@ -11,7 +11,6 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.network "forwarded_port", guest: 9443, host: 9443, id: "althttps"
-  config.vm.network "forwarded_port", guest: 3001, host: 9001, id: "gitea"
   config.vm.network "forwarded_port", guest: 9090, host: 9003, id: "cockpit"
 
   config.vm.provision "ansible_local" do |ansible|
@@ -22,6 +21,6 @@ Vagrant.configure("2") do |config|
     ansible.provisioning_path = "/ansible"
     ansible.compatibility_mode = "2.0"
     ##ansible.verbose = '-vvv'
-    ##ansible.skip_tags = "389ds,cockpit,firewalld,gitea,nodejs,pki,postgres"
+    ##ansible.skip_tags = "389ds,cockpit,firewalld,gitea,nginx,nodejs,pki,postgres"
   end
 end

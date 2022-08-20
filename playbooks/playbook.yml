@@ -188,6 +188,7 @@
       - gitea
 
   - name: gitea--> Check for gitea admin user
+    become_user: gitea
     shell: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user list | grep ^1
     register: giteaadmin
     changed_when: false
@@ -196,12 +197,14 @@
       - gitea
 
   - name: gitea--> Create admin user
+    become_user: gitea
     command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin user create --username gitadmin --password '{{ admin_password }}' --admin --email root@localhost
     when: giteaadmin.rc != 0
     tags:
       - gitea
 
   - name: gitea--> Check for LDAP authentication source
+    become_user: gitea
     shell: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin auth list | grep 389ds
     register: gitealdapauth
     changed_when: false
@@ -210,6 +213,7 @@
       - gitea
 
   - name: gitea--> Create LDAP authentication source
+    become_user: gitea
     command: /usr/local/bin/gitea -c /etc/gitea/gitea.ini --custom-path /var/lib/gitea/custom/ admin auth add-ldap-simple --name 389ds --host localhost --port 389 --security-protocol=starttls --user-search-base ou=people,dc=boulderhill,dc=net --user-filter="(&(objectClass=posixAccount)(uid=%s))" --username-attribute=uid --email-attribute=mail --user-dn="uid=%s,ou=people,dc=boulderhill,dc=net"
     when: gitealdapauth.rc != 0
     tags:

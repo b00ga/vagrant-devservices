@@ -5,6 +5,7 @@ roles:
   - name: geerlingguy.postgresql
   - name: do1jlr.gitea
   - name: geerlingguy.nodejs
+  - name: uoi-io.haproxy
 
 collections:
   - name: nginxinc.nginx_core

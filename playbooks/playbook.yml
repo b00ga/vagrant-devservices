@@ -75,6 +75,33 @@
     tags:
       - pki
 
+  - name: Slurp host public tls cert
+    slurp:
+      src: '/etc/pki/tls/certs/{{ ansible_fqdn }}.pem'
+    register: pki_tls_public
+    tags:
+      - pki
+
+  - name: Slurp host private tls cert
+    slurp:
+      src: '/etc/pki/tls/private/{{ ansible_fqdn }}.key'
+    register: pki_tls_private
+    tags:
+      - pki
+
+  - name: Create public/private combined cert file
+    template:
+      src: combined.pem.j2
+      dest: '/etc/pki/tls/private/{{ ansible_fqdn }}-combined.pem'
+      owner: root
+      group: root
+      mode: '0440'
+    vars:
+      - pem_private_key: "{{ pki_tls_private['content'] | b64decode }}"
+      - pem_public_cert: "{{ pki_tls_public['content'] | b64decode }}"
+    tags:
+      - pki
+
   - name: Update root certificate store
     command: /bin/update-ca-trust extract
     when: cainstall.changed
@@ -235,55 +262,41 @@
     tags:
       - nodejs
 
-  - name: Install NGINX
-    include_role:
-      name: nginxinc.nginx_core.nginx
+  - name: Install haproxy
+    import_role:
+      name: uoi-io.haproxy
     vars:
-      nginx_debug_output: true
-      nginx_install_from: os_repository
+      haproxy_default_mode: http
+      haproxy_global_logs:
+       - 127.0.0.1 local2
+      haproxy_global_ssl_bind_ciphers: PROFILE=SYSTEM
+      haproxy_global_ssl_server_ciphers: PROFILE=SYSTEM
+      haproxy_global_ssl_bind_options: prefer-client-ciphers no-sslv3 no-tlsv10 no-tlsv11 no-tlsv12 no-tls-tickets
+      haproxy_global_ssl_server_options: no-sslv3 no-tlsv10 no-tlsv11 no-tlsv12 no-tls-tickets
+      haproxy_frontend:
+        - althttps:
+            binds_ssl:
+              - ':9443 ssl crt /etc/pki/tls/private/{{ ansible_fqdn }}-combined.pem alpn h2,http/1.1'
+            http_responses:
+              - set-header Strict-Transport-Security max-age=63072000
+            acls:
+              - url_git path_beg        -i /git
+            use_backends:
+              - git             if url_git
+      haproxy_backend:
+        - git:
+            servers:
+              - gitea 127.0.0.1:3001 check
+            reqrep:
+              - '^([^\ :]*)\ /git/(.*) \1\ /\2'
     tags:
-      - nginx
+      - haproxy
 
-  - name: Configure NGINX
-    include_role:
-      name: nginxinc.nginx_core.nginx_config
-    vars:
-      nginx_config_debug_output: true
-      nginx_config_http_template_enable: true
-      nginx_config_http_template:
-        default:
-          servers:
-            '{{ ansible_fqdn }}':
-              listen:
-                listen_althttps:
-                  ip: 0.0.0.0
-                  port: 9443
-                  ssl: true
-              server_name: '{{ ansible_fqdn }}'
-              ssl:
-                cert: '/etc/pki/tls/certs/{{ ansible_fqdn }}.pem'
-                key: '/etc/pki/tls/private/{{ ansible_fqdn }}.key'
-              reverse_proxy:
-                locations:
-                  gitea:
-                    location: /git/
-                    proxy_pass: http://localhost:3001/
-    tags:
-      - nginx
-
-  - name: nginx--> Start/enable nginx
-    systemd:
-      name: nginx
-      state: started
-      enabled: yes
-    tags:
-      - nginx
-
-  - name: nginx--> Add alt https to firewall
+  - name: Add alt https to firewall
     firewalld:
       port: 9443/tcp
       permanent: yes
       immediate: yes
       state: enabled
     tags:
-      - nginx
+      - haproxy
